@@ -1,0 +1,164 @@
+Metadata-Version: 2.4
+Name: kb-builder
+Version: 0.1.0
+Summary: Knowledge Base Builder for RAG Applications
+Author: Your Name
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: faiss-cpu>=1.8.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: tqdm>=4.65.0
+Requires-Dist: pydantic>=2.0.0
+Requires-Dist: docx-parser>=0.1.0
+Requires-Dist: langchain>=0.3.0
+Requires-Dist: langchain-community>=0.3.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# KB Builder
+
+Knowledge Base builder that converts documents into FAISS vector index for semantic search and RAG applications.
+知识库构建工具，将文档转换为 FAISS 向量索引，用于语义搜索和 RAG 应用。
+
+## Features
+
+- 📄 **Document Processing** - Parse .doc/.docx files with text and table extraction
+- 🔍 **Smart Chunking** - Intelligent text splitting with context preservation
+- 🧮 **Vector Index** - Build FAISS index for fast semantic search
+- 💾 **Persistence** - Save/load knowledge bases with metadata
+- 🔄 **Incremental Updates** - Track document changes with SHA1 hashing
+
+## Installation
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+## Quick Start
+
+### Build Knowledge Base
+
+```python
+from kb_builder import build_knowledge_base
+
+# Build from document directory
+build_knowledge_base(
+    source_dir="./documents",
+    kb_path="./kb_output",
+    embedding_provider="ollama",
+    embed_model="mxbai-embed-large"
+)
+```
+
+### Load Knowledge Base
+
+```python
+from kb_builder import load_kb
+
+# Load existing KB
+kb = load_kb("./kb_output")
+print(f"Loaded {len(kb.chunks)} chunks")
+print(f"Index dimension: {kb.index.d}")
+```
+
+## Architecture
+
+```
+kb-builder/
+├── kb_builder/
+│   ├── __init__.py         # Public API
+│   ├── builder.py          # Main KB building logic
+│   ├── loader.py           # KB loading utilities
+│   ├── chunker.py          # Text chunking strategies
+│   ├── utils.py            # Helper functions
+│   └── schemas.py          # Data models
+├── requirements.txt
+└── README.md
+```
+
+## Dependencies
+
+- **docx-parser** - Document parsing (from Step 1)
+- **embedding-service client** - Vector generation
+- **FAISS** - Vector indexing
+- **Pydantic** - Data validation
+
+## Usage Examples
+
+### Custom Chunking
+
+```python
+from kb_builder import build_knowledge_base
+
+build_knowledge_base(
+    source_dir="./docs",
+    kb_path="./kb",
+    chunk_size=512,      # Custom chunk size
+    chunk_overlap=50,    # Overlap between chunks
+    embedding_provider="ollama"
+)
+```
+
+### Access KB Metadata
+
+```python
+from kb_builder import load_kb
+
+kb = load_kb("./kb")
+
+# Check manifest
+if kb.manifest:
+    print(f"Built at: {kb.manifest.built_at}")
+    print(f"Provider: {kb.manifest.provider}")
+    print(f"Total documents: {len(kb.manifest.documents)}")
+
+# Iterate chunks
+for vector_id, chunk in kb.chunks.items():
+    print(f"Chunk {vector_id}: {chunk.source_file}")
+```
+
+## Output Structure
+
+```
+kb_output/
+├── index.faiss           # FAISS vector index
+├── chunks.jsonl          # Chunk metadata (one JSON per line)
+└── manifest.json         # Build metadata
+```
+
+## Development
+
+### Run Tests
+
+```bash
+python -m pytest tests/
+```
+
+### Build from Source
+
+```bash
+git clone <repo>
+cd kb-builder
+pip install -e .
+```
+
+## License
+
+MIT
